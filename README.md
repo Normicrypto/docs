@@ -53,3 +53,19 @@ When using the GitHub logos, be sure to follow the [GitHub logo guidelines](http
 ## Thanks :purple_heart:
 
 Thanks for all your contributions and efforts towards improving the GitHub documentation. We thank you for being part of our :sparkles: community :sparkles:!
+name: Reject PRs From Forks
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  deny_fork:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if PR is from a fork
+        if: ${{ github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name }}
+        run: |
+          echo "This PR originates from a fork. Closing."
+          gh pr close ${{ github.event.number }} --delete-branch || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
